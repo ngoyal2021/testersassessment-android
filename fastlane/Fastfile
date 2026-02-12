@@ -1,0 +1,114 @@
+# Fastfile for ShopMobile
+# This file implements the test execution logic for both local emulators and Sauce Labs
+
+default_platform(:android)
+
+platform :android do
+
+  # Project Configuration
+  APP_PACKAGE = "com.abnamro.apps.referenceandroid"
+  ANNOTATION_PACKAGE = "com.abnamro.apps.referenceandroid.annotations"
+
+   desc "Run tests locally on connected emulator"
+    lane :local do |options|
+      annotation = options[:annotation]
+
+      gradle_props = {}
+
+      if annotation.to_s.strip != ""
+        UI.message "Running only tests with annotation: #{annotation}"
+        gradle_props[
+          "android.testInstrumentationRunnerArguments.annotation"
+        ] = "#{ANNOTATION_PACKAGE}.#{annotation}"
+      else
+        UI.message "Running full test suite (no annotation filter)"
+      end
+
+      gradle(
+        task: "connectedDebugAndroidTest",
+        properties: gradle_props
+      )
+
+      UI.success "Local tests completed successfully!"
+    end
+
+
+    desc "Run tests on Sauce Labs devices"
+    lane :sauce do |options|
+      annotation = options[:annotation]
+
+      UI.message "SAUCE_USERNAME=#{ENV['SAUCE_USERNAME']}"
+      UI.message "SAUCE_ACCESS_KEY present? #{!ENV['SAUCE_ACCESS_KEY'].to_s.empty?}"
+
+      if annotation.to_s.strip != ""
+        ENV["SAUCE_ANNOTATION"] = "#{ANNOTATION_PACKAGE}.#{annotation}"
+      end
+
+      UI.message "Cleaning the existing build"
+      gradle(task: "clean")
+
+      UI.message "Building app APK (assembleDebug)..."
+      gradle(task: "assembleDebug")
+
+      UI.message "Building test APK (assembleDebugAndroidTest)..."
+      gradle(task: "assembleDebugAndroidTest")
+
+      # Check if saucectl is installed
+      UI.message "Checking for saucectl installation..."
+
+      saucectl_found = false
+      begin
+        saucectl_version = sh("saucectl --version 2>&1", log: false).strip
+        if saucectl_version.include?("saucectl") || saucectl_version.match?(/\d+\.\d+\.\d+/)
+          UI.success "Found saucectl: #{saucectl_version}"
+          saucectl_found = true
+        end
+      rescue
+        saucectl_found = false
+      end
+
+      unless saucectl_found
+        UI.error "❌ saucectl is not installed or not in PATH"
+        UI.user_error!("Please install saucectl and try again")
+      end
+
+      UI.message "Executing tests on Sauce Labs..."
+      UI.message "saucectl will use configuration from .sauce/config.yml"
+
+      begin
+        repo_root = File.expand_path("..", __dir__)
+        Dir.chdir(repo_root)
+        sh("saucectl run --verbose", log: true)
+        UI.success "Sauce Labs tests completed successfully!"
+      rescue => ex
+        UI.error "Failed to run tests on Sauce Labs"
+        UI.error "Error: #{ex.message}"
+        UI.user_error!("Sauce Labs execution failed")
+      end
+    end
+
+
+    desc "Display help information"
+    lane :usage do
+      UI.header "Fastlane Commands"
+      UI.message ""
+      UI.message "Available lanes:"
+      UI.message "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      UI.message ""
+      UI.message "🔧 Local Testing:"
+      UI.message "  fastlane local                    - Run tests on local emulator"
+      UI.message "  fastlane local annotation:Smoke   - Run specific annotated tests"
+      UI.message ""
+      UI.message "☁️  Sauce Labs Testing:"
+      UI.message "  fastlane sauce                    - Run tests on Sauce Labs"
+      UI.message "  fastlane sauce annotation:Smoke   - Run specific annotated tests"
+      UI.message ""
+      UI.message "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      UI.message ""
+      UI.message "Configuration:"
+      UI.message "  App Package: #{APP_PACKAGE}"
+      UI.message "  Annotation Package: #{ANNOTATION_PACKAGE}"
+      UI.message ""
+    end
+
+  end

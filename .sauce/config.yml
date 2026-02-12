@@ -1,0 +1,26 @@
+apiVersion: v1alpha
+kind: espresso
+sauce:
+  region: eu-central-1
+  concurrency: 1
+  metadata:
+    build: "ReferenceAndroid $DATE"
+    tags:
+      - e2e
+      - android
+
+espresso:
+  app: app/build/outputs/apk/debug/app-debug.apk
+  testApp: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+
+suites:
+  - name: "Regression - Emulator"
+    testOptions:
+      class: []
+      annotation: ${SAUCE_ANNOTATION}
+      useTestOrchestrator: true
+      clearPackageData: true
+    emulators:
+      - name: "Android GoogleAPI Emulator"
+        platformVersions:
+          - "10.0"

@@ -1,0 +1,82 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlin_version = '1.4.32'
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.1"
+
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+plugins {
+    id "io.gitlab.arturbosch.detekt" version "1.15.0"
+    id "org.sonarqube" version "2.6"
+
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+apply plugin: 'org.sonarqube'
+apply plugin: "io.gitlab.arturbosch.detekt"
+
+
+detekt {
+    toolVersion = "1.15.0"
+    config = files("default-detekt-config.yml")
+    buildUponDefaultConfig = true
+}
+
+// Apply to all Detekt tasks (including the main one)
+tasks.withType(io.gitlab.arturbosch.detekt.Detekt).configureEach {
+    // Set the source directories
+    setSource(files("app/src/main/java", "app/src/main/kotlin"))
+
+    // Include only Kotlin files
+    include("**/*.kt")
+
+    // Exclude test, resources, tmp directories
+    exclude("**/test/**", "**/resources/**", "**/tmp/**")
+}
+
+sonarqube {
+    properties {
+        property "sonar.host.url", "http://p-sonarqube.nl.eu.abnamro.com:9000"
+        property "sonar.projectName", "Android - Reference App"
+        property "sonar.projectKey", "com.abnamro.apps.referenceandroid:referenceandroid"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.description", "Reference Android App"
+        property "sonar.report.export.path", "sonar-report.json"
+        property "sonar.projectVersion","1.0.0"
+
+//        when debugging use the q server
+//        property "sonar.host.url", "http://q-sonarqube.nl.eu.abnamro.com:9000"
+//        property "sonar.login","[DONOTCOMMIT]"
+//        property "sonar.password","[DONOTCOMMIT]"
+
+        property "detekt.sonar.kotlin.config.path","support/default-detekt-config.yml"
+        property "sonar.findbugs.excludesFilters","../support/findbugs-filter.xml"
+
+//        for coverage report
+//        property "sonar.java.coveragePlugin", "jacoco"
+//        property "sonar.jacoco.reportPaths","app/build/jacoco/testDevelopDebugUnitTest.exec"
+    }
+}
+
