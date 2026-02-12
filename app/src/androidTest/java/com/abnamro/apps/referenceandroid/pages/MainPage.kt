@@ -69,15 +69,6 @@ class MainPage {
             .perform(click())
     }
 
-    fun longClickFab() {
-        fab()
-            .perform(longClick())
-    }
-
-    fun clickSettingsMenu() {
-        settingsMenu()
-            .perform(click())
-    }
 
     // ==============================
     // Generic Helpers
