@@ -20,10 +20,10 @@ class MainTest : BaseTest(){
     @SmokeTest
     fun verifyMainPage()
     {
-        mainPage.checkHelloWorldDisplayed()
-        mainPage.checkFabIsDisplayed()
+        mainPage.verifyHelloWorldDisplayed()
+        mainPage.verifyFabDisplayed()
         openContextualActionModeOverflowMenu()
-        mainPage.checkSettingsMenuVisible()
+        mainPage.verifySettingsMenuVisible()
 
     }
 
@@ -31,24 +31,24 @@ class MainTest : BaseTest(){
     @SmokeTest
     fun verifyAppLaunchtime()
     {
-        measureResponseTime(mainPage.getHelloWorld())
+        measureResponseTime(mainPage.helloWorld())
     }
 
     @Test
     @RegressionTest
     fun verifySnackBarTextOnSimpleClick()
     {
-        mainPage.checkFabIsClickable()
+        mainPage.verifyFabClickable()
         mainPage.clickFab()
-        mainPage.checkSnackbarTextDisplayed()
+        mainPage.verifySnackbarDisplayed()
     }
 
     @Test
     @RegressionTest
     fun verifySnackBarTextOnLongClick()
     {
-        mainPage.verifyTextLongClick("Replace with your own action")
-        mainPage.checkSnackbarTextDisplayed()
+        mainPage.longClickFabAndVerifyText("Replace with your own action")
+        mainPage.verifySnackbarDisplayed()
     }
 
 
@@ -57,8 +57,8 @@ class MainTest : BaseTest(){
     @RegressionTest
     fun verifyHelloWorldText()
     {
-        mainPage.checkHelloWorldDisplayed()
-        mainPage.getHelloWorldText().check(matches(isDisplayed()))
+        mainPage.verifyHelloWorldDisplayed()
+        mainPage.helloWorld().check(matches(isDisplayed()))
     }
 
     @Test
@@ -66,7 +66,7 @@ class MainTest : BaseTest(){
     fun clickMenuItem()
     {
         openContextualActionModeOverflowMenu()
-        mainPage.checkSettingsMenuVisible()
+        mainPage.verifySettingsMenuVisible()
         CommonMethod.clickMenuItem("Settings")
     }
 
@@ -74,8 +74,8 @@ class MainTest : BaseTest(){
     @RegressionTest
     fun verifyResponseTime()
     {
-        PerformanceUtils.measureClickResponseTime(clickableView = mainPage.getEmailFab(),
-            resultView = mainPage.getSnackbarText(),
+        PerformanceUtils.measureClickResponseTime(clickableView = mainPage.fab(),
+            resultView = mainPage.snackbar(),
             maxTimeMs = 1000 )
     }
 

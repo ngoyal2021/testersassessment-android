@@ -9,66 +9,87 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import org.hamcrest.core.AllOf.allOf
 
 class MainPage {
-    private val helloWorldText = onView(withId(R.id.fragment))
-    private val helloWorldMatcher = withId(R.id.fragment)
-    private val emailIcon = onView(withId(R.id.fab))
-    private val settingsMenuItem = onView(withText("Settings"))
-    private val snackbarText = onView(withText("Replace with your own action"))
+    private val fragmentContainer = withId(R.id.fragment)
+    private val fabButton = withId(R.id.fab)
+    private val helloWorldText = withText("Hello World!")
+    private val settingsMenuText = withText("Settings")
+    private val snackbarMessage = withText("Replace with your own action")
 
-    fun checkHelloWorldDisplayed() {
-        helloWorldText.check(matches(isDisplayed()))
+    // ==============================
+    // View Getters (Optional)
+    // ==============================
+
+     fun helloWorld(): ViewInteraction =
+        onView(allOf(helloWorldText, isDescendantOfA(fragmentContainer)))
+
+     fun fab(): ViewInteraction =
+        onView(fabButton)
+
+     fun settingsMenu(): ViewInteraction =
+        onView(settingsMenuText)
+
+     fun snackbar(): ViewInteraction =
+        onView(snackbarMessage)
+
+    // ==============================
+    // Assertions
+    // ==============================
+
+    fun verifyHelloWorldDisplayed() {
+        helloWorld()
+            .check(matches(isDisplayed()))
     }
+
+    fun verifyFabDisplayed() {
+        fab()
+            .check(matches(isDisplayed()))
+    }
+
+    fun verifyFabClickable() {
+        fab()
+            .check(matches(isClickable()))
+    }
+
+    fun verifySnackbarDisplayed() {
+        snackbar()
+            .check(matches(isDisplayed()))
+    }
+
+    fun verifySettingsMenuVisible() {
+        settingsMenu()
+            .check(matches(isDisplayed()))
+    }
+
+    // ==============================
+    // Actions
+    // ==============================
 
     fun clickFab() {
-        emailIcon.perform(click())
+        fab()
+            .perform(click())
     }
 
-    fun checkSnackbarTextDisplayed() {
-        snackbarText.check(matches(isDisplayed()))
-    }
-
-
-    fun checkSettingsMenuVisible() {
-        settingsMenuItem.check(matches(isDisplayed()))
+    fun longClickFab() {
+        fab()
+            .perform(longClick())
     }
 
     fun clickSettingsMenu() {
-        settingsMenuItem.perform(click())
+        settingsMenu()
+            .perform(click())
     }
 
-    fun checkFabIsDisplayed() {
-        emailIcon.check(matches(isDisplayed()))
-    }
+    // ==============================
+    // Generic Helpers
+    // ==============================
 
-    fun checkFabIsClickable()
-    {
-        emailIcon.check(matches(isClickable()))
-    }
-
-
-
-    fun  getHelloWorldText() : ViewInteraction {
-            return onView(
-                allOf(
-                    withText("Hello World!"),
-                    isDescendantOfA(helloWorldMatcher)
-                )
-            )
-        }
-
-    fun verifyTextLongClick(text: String) {
-        onView(withId(R.id.fab))
-            .perform(longClick())
-
-        // If it shows Snackbar or toast, verify it
+    fun verifyTextDisplayed(text: String) {
         onView(withText(text))
             .check(matches(isDisplayed()))
     }
 
-    fun getEmailFab(): ViewInteraction = emailIcon
-
-    fun getSnackbarText(): ViewInteraction = snackbarText
-
-    fun getHelloWorld(): ViewInteraction = helloWorldText
+    fun longClickFabAndVerifyText(expectedText: String) {
+        fab().perform(longClick())
+        verifyTextDisplayed(expectedText)
     }
-
+}
